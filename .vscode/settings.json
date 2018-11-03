@@ -1,0 +1,12 @@
+{
+    "python.venvFolders": [
+        "envs",
+        ".pyenv",
+        ".direnv",
+        "python-env"
+      ],
+    
+      // Path to folder with a list of Virtual Environments (e.g. ~/.pyenv, ~/Envs, ~/.virtualenvs).
+    "python.venvPath": "D:/workspace/python-env",
+    "python.pythonPath": "D:\\workspace\\python-env\\ndsweb\\Scripts\\python.exe",
+}

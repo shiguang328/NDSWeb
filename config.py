@@ -13,7 +13,7 @@ class Config:
         # ['true', 'on', '1']
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    print(MAIL_USERNAME, MAIL_PASSWORD)
+    # print(MAIL_USERNAME, MAIL_PASSWORD)
 
     FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
     FLASKY_MAIL_SENDER = 'Flasky Admin <13052353610@163.com>'
@@ -22,6 +22,15 @@ class Config:
     FLASKY_POSTS_PER_PAGE = 20
     FLASKY_FOLLOWERS_PER_PAGE = 50
     FLASKY_COMMENTS_PER_PAGE = 30
+
+    MONGODB_SETTINGS = {
+        'db': 'ndsdata',
+        'host': 'localhost',
+        'port': 27017
+    }
+
+    VEHICLE_TYPE = ('Car', 'Bus', 'SUV', 'Taxi', 'Truck', 'Motorcycle')
+    POWER_TYPE = ('Gasoline', 'Electric', 'Hybrid')
 
     @staticmethod
     def init_app(app):

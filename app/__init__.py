@@ -14,13 +14,20 @@ mail = Mail()
 moment = Moment()
 # db = SQLAlchemy()
 # pagedown = PageDown()
-client = MongoClient('mongodb://localhost')
+# client = MongoClient('mongodb://localhost')
 # db = client.ndsweb
 db = MongoEngine()
 
 login_manager = LoginManager()
-# login_manager.login_view = 'auth.login'
-login_manager.login_view = 'main.index'
+
+# By defalut, when a user attempts to access a @login_required view without being logged in,
+# Flask-Login will flash a message and redirect them to the log in view.(If the login view
+# is not set, it will abort with a 401 error.)
+# Here is the setted login view.
+login_manager.login_view = 'auth.login'
+
+# set message flashed.(defalut is 'Please log in to access this page.')
+login_manager.login_message = 'Please log in first.'
 
 
 def create_app(config_name):
