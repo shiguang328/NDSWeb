@@ -225,6 +225,25 @@ class Car(db.Document):
             if not len(Car.objects(CarId=temp)):  # 检查数据库中是否重复
                 self.CarId = temp
 
+    def to_json(self):
+        json_car = {
+            'url': url_for('api.get_car', id=self.id),
+            'CarId': self.CarId,
+            'LicensePlate': self.LicensePlate,
+            'Brand': self.Brand,
+            'OwnerCompany': self.OwnerCompany,
+            'Project': self.Project,
+            'BuyTime': self.BuyTime,
+            'InsuranceNumber': self.InsuranceNumber,
+            'ModelName': self.ModelName,
+            'VehicleType': self.VehicleType,
+            'PowerType': self.PowerType,
+            'AutonomousVehicle': self.AutonomousVehicle,
+            'AccidentLog': self.AccidentLog,
+            'Others': self.Others
+        }
+        return json_car
+
     @staticmethod
     def generate_fake(count=100):
         from random import seed
@@ -236,28 +255,7 @@ class Car(db.Document):
                     LicensePlate=forgery_py.lorem_ipsum.word())
             c.save()
 
-'''{
-    "_id" : ObjectId("5bda753dce09ab5acc8ae6e8"),
-    "DriverId" : "1",
-    "FirstName" : "Jun",
-    "LastName" : "Xu",
-    "Address" : "No 470 North Shangxi Road",
-    "City" : "Jingan",
-    "State" : "SH",
-    "Zip" : "200041",
-    "Gender" : "M",
-    "Location" : "SHANGHAI",
-    "BirthDay" : ISODate("1972-10-28T00:00:00.000Z"),
-    "Vehicle" : "229730",
-    "DrivingYears" : 10,
-    "Profession" : "Purchasing Engineer",
-    "MileageTotal" : "100000+",
-    "Startdate" : ISODate("2012-12-21T00:00:00.000Z"),
-    "ReturnDate" : ISODate("2013-01-25T00:00:00.000Z"),
-    "EndDate" : ISODate("2013-03-04T00:00:00.000Z"),
-    "MileageKM1stmonth" : "1905.0",
-    "MileageKM2ndmonth" : "1406.0"
-}'''
+
 class Driver(db.Document):
     DriverId = db.StringField(required=True)
     FirstName = db.StringField(required=True)
@@ -273,7 +271,6 @@ class Driver(db.Document):
     DrivingYears = db.IntField(required=True)
     Profession = db.StringField()
     MileageTotal = db.StringField()
-
 
     def __init__(self, **kwargs):
         super(Driver, self).__init__(**kwargs)
@@ -295,5 +292,5 @@ class Driver(db.Document):
             d = Driver(DriverId=forgery_py.lorem_ipsum.word(),
                     FirstName=forgery_py.lorem_ipsum.word(),
                     Vehicle=car,
-                    DrivingYears=randint(10000, 99999))
+                    DrivingYears=randint(10000000, 99999999))
             d.save()

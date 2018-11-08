@@ -6,6 +6,9 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateF
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
 from wtforms import ValidationError
 
+VEHICLE_TYPE = ('Car', 'Bus', 'SUV', 'Taxi', 'Truck', 'Motorcycle')
+POWER_TYPE = ('Gasoline', 'Electric', 'Hybrid')
+
 
 class UserForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -22,8 +25,8 @@ class UserForm(FlaskForm):
     submit = SubmitField('Register')
 
 
-class CarInformationForm(FlaskForm):
-    car_id = IntegerField('Car ID')
+class CarForm(FlaskForm):
+    # car_id = IntegerField('Car ID')
     license_plate = StringField('License Plate', validators=[DataRequired()])
     brand = StringField('Brand', validators=[DataRequired()])
     owner_company = StringField('Owner Company')
@@ -31,17 +34,15 @@ class CarInformationForm(FlaskForm):
     buy_time = DateField('Buy Time', validators=[DataRequired()])
     insurance_num = StringField('Insurance Number')
     model_name = StringField('Model')
-    # vehicle_type = SelectField('Vehicle Type', choices=list(zip(current_app.config['VEHICLE_TYPE'],
-    #                                                             current_app.config['VEHICLE_TYPE'])))
-    # power_type = SelectField('Power Type', choices=list(zip(current_app.config['POWER_TYPE'],
-                                                            # current_app.config['POWER_TYPE'])))
+    vehicle_type = SelectField('Vehicle Type', choices=list(zip(VEHICLE_TYPE, VEHICLE_TYPE)))
+    power_type = SelectField('Power Type', choices=list(zip(POWER_TYPE, POWER_TYPE)))
     autonomous = BooleanField('Autonomous Vehicle')
     accident_log = TextField('Accident Log')
     others = TextField('Others')
 
 
-class DriverInformationForm(FlaskForm):
-    driver_id = IntegerField('Car ID')
+class DriverForm(FlaskForm):
+    # driver_id = IntegerField('Car ID')
     first_name = StringField('First Name', validators=[DataRequired(), Length(1, 64)])
     last_name = StringField('Last Name', validators=[Length(0, 64)])
     address = StringField('Address')
@@ -55,8 +56,3 @@ class DriverInformationForm(FlaskForm):
     driving_years = IntegerField('Driving Years')
     profession = StringField('Profession')
     mileage_total = IntegerField('Mileage(km)')
-    start_date = DateField('Start Date')
-    return_date = DateField('Return Date')
-    end_date = DateField('End Date')
-    mileage_1th_month = IntegerField('Mileage(km) at 1th month')
-    mileage_2th_month = IntegerField('Mileage(km) at 2th month')
