@@ -35,3 +35,32 @@ def get_car(id):
         return jsonify(car.to_json())
     else:
         abort(404)
+
+
+@api.route('/cars/', methods=['POST'])
+def new_car():
+    car = Car.from_json(request.json)
+    car.save()
+    return jsonify(car.to_json()), 201, \
+        {'Location': url_for('api.get_car', id=car.id)}
+
+
+@api.route('/cars/<id>', methods=['PUT'])
+def edit_car(id):
+    car = Car.objects(id=id).first()
+    if car is None:
+        abort(404)
+    car.LicensePlate = request.json.get('LicensePlate')
+    car.Brand = request.json.get('Brand')
+    car.OwnerCompany = request.json.get('OwnerCompany')
+    car.Project = request.json.get('Project')
+    car.BuyTime = request.json.get('BuyTime')
+    car.InsuranceNumber = request.json.get('InsuranceNumber')
+    car.ModelName = request.json.get('ModelName')
+    car.VehicleType = request.json.get('VehicleType')
+    car.PowerType = request.json.get('PowerType')
+    car.AutonomousVehicle = request.json.get('AutonomousVehicle')
+    car.AccidentLog = request.json.get('AccidentLog')
+    car.Others = request.json.get('Others')
+    car.save()
+    return jsonify(car.to_json())

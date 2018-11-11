@@ -5,9 +5,10 @@ from bson import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app, request, url_for
-from flask_login import UserMixin, AnonymousUserMixin
+from flask_login import UserMixin, AnonymousUserMixin, current_user
 from . import db, login_manager
 from flask_mongoengine.wtf import model_form
+from app.exceptions import ValidationError
 
 
 class User(UserMixin, db.Document):
@@ -142,15 +143,15 @@ class User(UserMixin, db.Document):
 
     @staticmethod
     def verify_auth_token(token):
+        print('recive token: ', token)
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
+            print(data)
         except:
             return None
-        user = User.objects(id=ObjectId(data['id']))
-        if not len(user):
-            return None
-        return user[0]
+        user = User.objects(id=ObjectId(data['id'])).first()
+        return user
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -245,20 +246,50 @@ class Car(db.Document):
         return json_car
 
     @staticmethod
+    def from_json(json_car):
+        LicensePlate = json_car.get('LicensePlate')
+        Brand = json_car.get('Brand')
+        OwnerCompany = json_car.get('OwnerCompany')
+        Project = json_car.get('Project')
+        BuyTime = json_car.get('BuyTime')
+        InsuranceNumber = json_car.get('InsuranceNumber')
+        ModelName = json_car.get('ModelName')
+        VehicleType = json_car.get('VehicleType')
+        PowerType = json_car.get('PowerType')
+        AutonomousVehicle = json_car.get('AutonomousVehicle')
+        AccidentLog = json_car.get('AccidentLog')
+        Others = json_car.get('Others')
+
+        if LicensePlate is None or LicensePlate == '':
+            raise ValidationError('car does not have a license plate')
+        return Car(LicensePlate=LicensePlate,
+                   Brand=Brand,
+                   OwnerCompany=OwnerCompany,
+                   Project=Project,
+                   BuyTime=BuyTime,
+                   InsuranceNumber=InsuranceNumber,
+                   ModelName=ModelName,
+                   VehicleType=VehicleType,
+                   PowerType=PowerType,
+                   AutonomousVehicle=AutonomousVehicle,
+                   AccidentLog=AccidentLog,
+                   Others=Others)
+
+    @staticmethod
     def generate_fake(count=100):
         from random import seed
         import forgery_py
 
         seed()
         for i in range(count):
-            c = Car(CarId=forgery_py.lorem_ipsum.word(),
-                    LicensePlate=forgery_py.lorem_ipsum.word())
+            c = Car(LicensePlate=forgery_py.lorem_ipsum.word())
             c.save()
 
 
 class Driver(db.Document):
     DriverId = db.StringField(required=True)
-    FirstName = db.StringField(required=True)
+    Name = db.StringField()
+    FirstName = db.StringField()
     LastName = db.StringField()
     Address = db.StringField()
     City = db.StringField()
@@ -267,8 +298,7 @@ class Driver(db.Document):
     Gender = db.StringField()
     Location = db.StringField()
     BirthDay = db.DateTimeField()
-    Vehicle = db.ReferenceField(Car)  # reference field
-    DrivingYears = db.IntField(required=True)
+    DrivingYears = db.IntField()
     Profession = db.StringField()
     MileageTotal = db.StringField()
 
@@ -279,18 +309,159 @@ class Driver(db.Document):
             if not len(Driver.objects(DriverId=temp)):  # 检查数据库中是否重复
                 self.DriverId = temp
 
+    def to_json(self):
+        json_driver = {
+            'url': url_for('api.get_driver', id=self.id),
+            'FirstName': self.FirstName,
+            'LastName': self.LastName,
+            'Address': self.Address,
+            'City': self.City,
+            'State': self.State,
+            'Zip': self.Zip,
+            'Gender': self.Gender,
+            'Location': self.Location,
+            'BirthDay': self.BirthDay,
+            'DrivingYears': self.DrivingYears,
+            'Profession': self.Profession,
+            'MileageTotal': self.MileageTotal
+        }
+        return json_driver
+
+    @staticmethod
+    def from_json(json_driver):
+        FirstName = json_driver.get('FirstName')
+        LastName = json_driver.get('LastName')
+        Address = json_driver.get('Address')
+        City = json_driver.get('City')
+        State = json_driver.get('State')
+        Zip = json_driver.get('Zip')
+        Gender = json_driver.get('Gender')
+        Location = json_driver.get('Location')
+        BirthDay = json_driver.get('BirthDay')
+        DrivingYears = json_driver.get('DrivingYears')
+        Profession = json_driver.get('Profession')
+        MileageTotal = json_driver.get('MileageTotal')
+        if FirstName is None or FirstName == '':
+            raise ValidationError('driver does not have a firstname')
+        return Driver(FirstName=FirstName,
+                      LastName=LastName,
+                      Address=Address,
+                      City=City,
+                      State=State,
+                      Zip=Zip,
+                      Gender=Gender,
+                      Location=Location,
+                      BirthDay=BirthDay,
+                      DrivingYears=DrivingYears,
+                      Profession=Profession,
+                      MileageTotal=MileageTotal)
+
+    @staticmethod
+    def generate_fake(count=100):
+        from random import seed
+        import forgery_py
+
+        seed()
+        for i in range(count):
+            d = Driver(DriverId=forgery_py.lorem_ipsum.word(),
+                    FirstName=forgery_py.lorem_ipsum.word(),
+                    DrivingYears=randint(10000000, 99999999))
+            d.save()
+
+    @staticmethod
+    def merge_firstname_lastname_to_name():
+        ''' 将FirstName和LastName融合为Name，然后删除原先字段 '''
+        drivers = Driver.objects()
+        for driver in drivers:
+            if driver.Name is None:
+                name = ''
+                if driver.FirstName:
+                    name = name + driver.FirstName
+                if driver.LastName:
+                    if name == '':
+                        name = driver.LastName
+                    else:
+                        name = name + ' ' + driver.LastName
+                driver.Name = name
+                driver.save()
+            else:
+                if hasattr(driver, 'FirstName'):
+                    delattr(driver, 'FirstName')
+                if hasattr(driver, 'LastName'):
+                    delattr(driver, 'LastName')
+                driver.save()
+
+
+class Trip(db.Document):
+    car = db.ReferenceField(Car, required=True)
+    driver = db.ReferenceField(Driver, required=True)
+    start_time = db.DateTimeField(required=True)
+    end_time = db.DateTimeField()
+    disk_number = db.StringField()
+    recorder = db.ReferenceField(User)
+
+    def __init__(self, **kwargs):
+        super(Trip, self).__init__(**kwargs)
+        if current_user.is_authenticated:
+            self.recorder = current_user
+
+    def to_json(self):
+        if self.driver:
+            driver = self.driver.FirstName + ' ' + self.driver.LastName
+        else:
+            driver = None
+        if self.recorder:
+            recorder = self.recorder.name
+        else:
+            recorder = None
+        json_trip = {
+            'url': url_for('api.get_trip', id=self.id),
+            'car': self.car.LicensePlate,
+            'driver': driver,
+            'start_time': self.start_time,
+            'end_time': self.end_time,
+            'disk_number': self.disk_number,
+            'recorder': recorder
+        }
+        return json_trip
+
+    def from_json(self, json_trip):
+        if not json_trip.get('start_time'):
+            raise ValidationError('trip does not have a start time')
+        if not json_trip.get('car'):
+            raise ValidationError('trip does not have a car')
+        if not json_trip.get('driver'):
+            raise ValidationError('trip does not have a driver')
+        car = Car.objects(LicensePlate=json_trip.get('car')).first()
+        if not car:
+            raise ValidationError('input car not found')
+        driver = Driver.objects(Name=json_trip.get('driver')).first()
+        if not driver:
+            raise ValidationError('input driver not found')
+        recorder = None
+        if current_user.is_authenticated:
+            recorder = current_user
+        trip = Trip(start_time=json_trip.get('start_time'),
+                    car=car,
+                    driver=driver,
+                    recorder=recorder)
+        return trip
+        
     @staticmethod
     def generate_fake(count=100):
         from random import seed
         import forgery_py
         from random import choice
 
+        cars = Car.objects()
+        drivers = Driver.objects()
+
         seed()
         for i in range(count):
-            cars = Car.objects()
             car = choice(cars)
-            d = Driver(DriverId=forgery_py.lorem_ipsum.word(),
-                    FirstName=forgery_py.lorem_ipsum.word(),
-                    Vehicle=car,
-                    DrivingYears=randint(10000000, 99999999))
-            d.save()
+            driver = choice(drivers)
+
+            trip = Trip(car=car,
+                        driver=driver,
+                        start_time=forgery_py.date.date(True))
+            trip.save()

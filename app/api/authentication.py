@@ -9,6 +9,7 @@ auth = HTTPBasicAuth()
 
 @auth.verify_password
 def verify_password(email_or_token, password):
+    print('verify_password : %s  %s' % (email_or_token, password))
     if email_or_token == '':
         return False
     if password == '':
@@ -28,12 +29,14 @@ def auth_error():
     return unauthorized('Invalid credentials')
 
 
+''' 若api蓝本中所有的路由都需要相同的方式保护，可以使用before_request装饰器，
+    此处将login_required应用到蓝本内所有请求'''
 @api.before_request
 @auth.login_required
 def before_request():
-    if not g.current_user.is_anonymous and \
-            not g.current_user.confirmed:
-        return forbidden('Unconfirmed account')
+    # print(auth.get_auth())
+    # print('before request.........')
+    pass
 
 
 @api.route('/tokens/', methods=['POST'])
