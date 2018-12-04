@@ -68,13 +68,11 @@ class User(UserMixin, db.Document):
             data = s.loads(token.encode('utf-8'))
         except:
             return False
-        # user = User.query.get(data.get('reset'))
         user = User.objects(id=ObjectId(data.get('reset')))
         if len(user) != 1:
             return False
         user = user[0]
         user.password_hash = generate_password_hash(new_password)
-        # db.session.add(user)
         user.save()
         return True
 
@@ -94,17 +92,12 @@ class User(UserMixin, db.Document):
         new_email = data.get('new_email')
         if new_email is None:
             return False
-        # if self.query.filter_by(email=new_email).first() is not None:
-        if len(User.objects(email=new_email)):
+        if User.objects(email=new_email).first() is not None:
             return False
         self.email = new_email
         # self.avatar_hash = self.gravatar_hash()
-        # db.session.add(self)
         self.save()  # add by leo
         return True
-
-    # def can(self, perm):
-    #     return self.role is not None and self.role.has_permission(perm)
 
     def is_administrator(self):
         return self.admin
@@ -289,8 +282,8 @@ class Car(db.Document):
 class Driver(db.Document):
     DriverId = db.StringField(required=True)
     Name = db.StringField()
-    FirstName = db.StringField()
-    LastName = db.StringField()
+    # FirstName = db.StringField()
+    # LastName = db.StringField()
     Address = db.StringField()
     City = db.StringField()
     State = db.StringField()
@@ -312,8 +305,9 @@ class Driver(db.Document):
     def to_json(self):
         json_driver = {
             'url': url_for('api.get_driver', id=self.id),
-            'FirstName': self.FirstName,
-            'LastName': self.LastName,
+            # 'FirstName': self.FirstName,
+            # 'LastName': self.LastName,
+            'Name': self.Name,
             'Address': self.Address,
             'City': self.City,
             'State': self.State,
@@ -329,8 +323,9 @@ class Driver(db.Document):
 
     @staticmethod
     def from_json(json_driver):
-        FirstName = json_driver.get('FirstName')
-        LastName = json_driver.get('LastName')
+        # FirstName = json_driver.get('FirstName')
+        # LastName = json_driver.get('LastName')
+        Name = json_driver.get('Name')
         Address = json_driver.get('Address')
         City = json_driver.get('City')
         State = json_driver.get('State')
@@ -341,10 +336,9 @@ class Driver(db.Document):
         DrivingYears = json_driver.get('DrivingYears')
         Profession = json_driver.get('Profession')
         MileageTotal = json_driver.get('MileageTotal')
-        if FirstName is None or FirstName == '':
-            raise ValidationError('driver does not have a firstname')
-        return Driver(FirstName=FirstName,
-                      LastName=LastName,
+        if Name is None or Name == '':
+            raise ValidationError('driver does not have a name')
+        return Driver(Name=Name,
                       Address=Address,
                       City=City,
                       State=State,
@@ -364,7 +358,7 @@ class Driver(db.Document):
         seed()
         for i in range(count):
             d = Driver(DriverId=forgery_py.lorem_ipsum.word(),
-                    FirstName=forgery_py.lorem_ipsum.word(),
+                    Name=forgery_py.lorem_ipsum.word(),
                     DrivingYears=randint(10000000, 99999999))
             d.save()
 
@@ -406,36 +400,32 @@ class Trip(db.Document):
             self.recorder = current_user
 
     def to_json(self):
-        if self.driver:
-            driver = self.driver.FirstName + ' ' + self.driver.LastName
-        else:
-            driver = None
-        if self.recorder:
-            recorder = self.recorder.name
-        else:
-            recorder = None
         json_trip = {
             'url': url_for('api.get_trip', id=self.id),
-            'car': self.car.LicensePlate,
-            'driver': driver,
             'start_time': self.start_time,
             'end_time': self.end_time,
-            'disk_number': self.disk_number,
-            'recorder': recorder
+            'disk_number': self.disk_number
         }
+        if self.car:
+            json_trip['car'] = {'LicensePlate': self.car.LicensePlate, 'url': url_for('api.get_car', id=self.car.id)}
+        if self.driver:
+            json_trip['driver'] = {'Name': self.driver.Name, 'url': url_for('api.get_driver', id=self.driver.id)}
+        if self.recorder:
+            json_trip['recorder'] = self.recorder.name
         return json_trip
 
     def from_json(self, json_trip):
+        ''' 前端发送car和driver的id来匹配Car和Driver对象 '''
         if not json_trip.get('start_time'):
             raise ValidationError('trip does not have a start time')
         if not json_trip.get('car'):
             raise ValidationError('trip does not have a car')
         if not json_trip.get('driver'):
             raise ValidationError('trip does not have a driver')
-        car = Car.objects(LicensePlate=json_trip.get('car')).first()
+        car = Car.objects(id=ObjectId(json_trip.get('car'))).first()
         if not car:
             raise ValidationError('input car not found')
-        driver = Driver.objects(Name=json_trip.get('driver')).first()
+        driver = Driver.objects(id=ObjectId(json_trip.get('driver'))).first()
         if not driver:
             raise ValidationError('input driver not found')
         recorder = None
