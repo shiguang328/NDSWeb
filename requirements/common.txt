@@ -1,0 +1,17 @@
+Flask
+Flask-Bootstrap
+Flask-Mongoengine
+Flask-Login
+Flask-Mail
+Flask-Migrate
+Flask-Moment
+Flask-PageDown
+Flask-SQLAlchemy
+Flask-WTF
+Flask-Restful
+Flask-Script
+Flask-Httpauth
+html5lib
+itsdangerous
+Jinja2
+WTForms

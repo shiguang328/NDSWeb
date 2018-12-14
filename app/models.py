@@ -12,13 +12,15 @@ from app.exceptions import ValidationError
 
 
 class User(UserMixin, db.Document):
-    email = db.StringField(required=True)
-    username = db.StringField(required=True, max_length=50)
+    email = db.StringField(required=True, unique=True)
+    username = db.StringField(required=True, unique=True, max_length=50)
     admin = db.BooleanField(default=False)
     password_hash = db.StringField(required=True)
     confirmed = db.BooleanField(default=False)  # 邮箱是否确认
     name = db.StringField(required=True)
     phone = db.StringField()
+    member_since = db.DateTimeField(default=datetime.utcnow)
+    last_seen = db.DateTimeField(default=datetime.utcnow)
 
     def __init__(self, **kwargs):
         ''' 注册用户是赋予角色，首先判断是否为管理员（配置中的FLASKY_ADMIN保存的电子邮件识别），
@@ -103,8 +105,7 @@ class User(UserMixin, db.Document):
         return self.admin
 
     def ping(self):
-        # self.last_seen = datetime.utcnow()
-        # db.session.add(self)
+        self.last_seen = datetime.utcnow()
         self.save()
 
     # def gravatar_hash(self):
@@ -116,18 +117,38 @@ class User(UserMixin, db.Document):
     #     return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
     #         url=url, hash=hash, size=size, default=default, rating=rating)
 
-    # def to_json(self):
-    #     json_user = {
-    #         'url': url_for('api.get_user', email=self.email),
-    #         'username': self.username,
-    #         'member_since': self.member_since,
-    #         'last_seen': self.last_seen,
-    #         'posts_url': url_for('api.get_user_posts', id=self.id),
-    #         'followed_posts_url': url_for('api.get_user_followed_posts',
-    #                                       id=self.id),
-    #         'post_count': self.posts.count()
-    #     }
-    #     return json_user
+    def to_json(self):
+        json_user = {
+            'url': url_for('api.get_user', id=self.id),
+            'email': self.email,
+            'username': self.username,
+            'admin': self.admin,
+            'confirmed': self.confirmed,
+            'name': self.name,
+            'phone': self.phone,
+            'member_since': self.member_since,
+            'last_seen': self.last_seen
+        }
+        return json_user
+
+    @staticmethod
+    def from_json(json_user):
+        email = json_user.get('email')
+        username = json_user.get('username')
+        admin = json_user.get('admin')
+        password = json_user.get('password')
+        # confirmed = json_user.get('confirmed')
+        name = json_user.get('name')
+        phone = json_user.get('phone')
+
+        user = User(email=email,
+                    username=username,
+                    password_hash=generate_password_hash(password),
+                    admin=admin,
+                    name=name,
+                    phone=phone)
+        return user
+        
 
     def generate_auth_token(self, expiration):
         s = Serializer(current_app.config['SECRET_KEY'],
@@ -162,8 +183,14 @@ class User(UserMixin, db.Document):
                      password_hash=generate_password_hash(forgery_py.lorem_ipsum.word()),
                      confirmed=True,
                      name=forgery_py.name.full_name())
-                    #  phone=forgery_py.lorem_ipsum.word())
             u.save()
+
+    @staticmethod
+    def delete_user():
+        for u in User.objects():
+            if u.email not in ['496073473@qq.com', 'liuzhipeng@tongji.edu.cn']:
+                u.delete()
+                print('success delete user %s' % u.username)
 
 
 # AnonymousUserMixin has the following properties and methods:
@@ -207,7 +234,8 @@ class Car(db.Document):
     ModelName = db.StringField()
     VehicleType = db.StringField()
     PowerType = db.StringField()
-    AutonomousVehicle = db.BooleanField()
+    AutonomousLevel = db.StringField()
+    # AutonomousLevel = db.StringField()
     AccidentLog = db.StringField()
     Others = db.StringField()
 
@@ -232,7 +260,7 @@ class Car(db.Document):
             'ModelName': self.ModelName,
             'VehicleType': self.VehicleType,
             'PowerType': self.PowerType,
-            'AutonomousVehicle': self.AutonomousVehicle,
+            'AutonomousLevel': self.AutonomousLevel,
             'AccidentLog': self.AccidentLog,
             'Others': self.Others
         }
@@ -249,7 +277,7 @@ class Car(db.Document):
         ModelName = json_car.get('ModelName')
         VehicleType = json_car.get('VehicleType')
         PowerType = json_car.get('PowerType')
-        AutonomousVehicle = json_car.get('AutonomousVehicle')
+        AutonomousLevel = json_car.get('AutonomousLevel')
         AccidentLog = json_car.get('AccidentLog')
         Others = json_car.get('Others')
 
@@ -264,24 +292,29 @@ class Car(db.Document):
                    ModelName=ModelName,
                    VehicleType=VehicleType,
                    PowerType=PowerType,
-                   AutonomousVehicle=AutonomousVehicle,
+                   AutonomousLevel=AutonomousLevel,
                    AccidentLog=AccidentLog,
                    Others=Others)
 
     @staticmethod
     def generate_fake(count=100):
-        from random import seed
+        from random import seed, choice
         import forgery_py
 
         seed()
+        brands = ['Audi', 'Toyota', 'Nissan', 'Buick', 'BMW', 'Cadillac']
+        types = ['SUV', 'Van', 'Trucks', 'Bus', 'Taxi', 'Car']
         for i in range(count):
-            c = Car(LicensePlate=forgery_py.lorem_ipsum.word())
+            c = Car(LicensePlate=forgery_py.lorem_ipsum.word(),
+                    Brand=choice(brands),
+                    VehicleType=choice(types),
+                    BuyTime=forgery_py.date.date(True))
             c.save()
 
 
 class Driver(db.Document):
     DriverId = db.StringField(required=True)
-    Name = db.StringField()
+    Name = db.StringField(required=True)
     # FirstName = db.StringField()
     # LastName = db.StringField()
     Address = db.StringField()
@@ -359,7 +392,12 @@ class Driver(db.Document):
         for i in range(count):
             d = Driver(DriverId=forgery_py.lorem_ipsum.word(),
                     Name=forgery_py.lorem_ipsum.word(),
-                    DrivingYears=randint(10000000, 99999999))
+                    DrivingYears=randint(0, 60),
+                    Address=forgery_py.address.street_address(),
+                    Zip=forgery_py.address.zip_code(),
+                    City=forgery_py.address.city(),
+                    State=forgery_py.address.state(),
+                    BirthDay=forgery_py.date.date(True))
             d.save()
 
     @staticmethod
@@ -414,7 +452,7 @@ class Trip(db.Document):
             json_trip['recorder'] = self.recorder.name
         return json_trip
 
-    def from_json(self, json_trip):
+    def from_json(json_trip):
         ''' 前端发送car和driver的id来匹配Car和Driver对象 '''
         if not json_trip.get('start_time'):
             raise ValidationError('trip does not have a start time')
@@ -442,6 +480,7 @@ class Trip(db.Document):
         from random import seed
         import forgery_py
         from random import choice
+        from datetime import timedelta
 
         cars = Car.objects()
         drivers = Driver.objects()
@@ -450,8 +489,10 @@ class Trip(db.Document):
         for i in range(count):
             car = choice(cars)
             driver = choice(drivers)
+            start = forgery_py.date.date(True)
 
             trip = Trip(car=car,
                         driver=driver,
-                        start_time=forgery_py.date.date(True))
+                        start_time=start,
+                        end_time=start+timedelta(days=3))
             trip.save()

@@ -1,21 +1,23 @@
 from flask import jsonify, request, g, url_for, current_app, abort
 from .. import db
 from . import api
+from .authentication import auth
 from ..models import Trip, Car, Driver
 from flask_mongoengine import ValidationError
 
 
 @api.route('/trips/')
+# @auth.login_required
 def get_trips():
     page = request.args.get('page', 1, type=int)
     pagination = Trip.objects.paginate(page=page, per_page=10)
     trips = pagination.items
     prev = None
     if pagination.has_prev:
-        prev = url_for('api.get_trips', page=page-1)
+        prev = url_for('api.get_trips', page=page - 1)
     next = None
     if pagination.has_next:
-        next = url_for('api.get_trips', page=page+1)
+        next = url_for('api.get_trips', page=page + 1)
     return jsonify({
         'trips': [trip.to_json() for trip in trips],
         'prev': prev,
@@ -25,6 +27,7 @@ def get_trips():
 
 
 @api.route('/trips/<id>')
+# @auth.login_required
 def get_trip(id):
     try:
         trip = Trip.objects(id=id).first()
@@ -38,15 +41,17 @@ def get_trip(id):
 
 
 @api.route('/trips/', methods=['POST'])
+# @auth.login_required
 def new_trip():
     trip = Trip.from_json(request.json)
     trip.save()
-    return jsonify(trip.to_json), 201, \
+    return jsonify(trip.to_json()), 201, \
         {'Location': url_for('api.get_trip', id=trip.id)}
 
 
 @api.route('/trips/<id>', methods=['PUT'])
-def edit_trip():
+# @auth.login_required
+def edit_trip(id):
     try:
         trip = Trip.objects(id=id).first()
     except:

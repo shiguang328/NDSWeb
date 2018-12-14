@@ -9,14 +9,13 @@ auth = HTTPBasicAuth()
 
 @auth.verify_password
 def verify_password(email_or_token, password):
-    print('verify_password : %s  %s' % (email_or_token, password))
     if email_or_token == '':
         return False
     if password == '':
         g.current_user = User.verify_auth_token(email_or_token)
         g.token_used = True
         return g.current_user is not None
-    user = User.objects(email=email_or_token).first()
+    user = User.objects(email=email_or_token).first()  # pylint: disable=no-member
     if not user:
         return False
     g.current_user = user
@@ -29,14 +28,13 @@ def auth_error():
     return unauthorized('Invalid credentials')
 
 
-''' 若api蓝本中所有的路由都需要相同的方式保护，可以使用before_request装饰器，
-    此处将login_required应用到蓝本内所有请求'''
+# 若api蓝本中所有的路由都需要相同的方式保护，可以使用before_request装饰器，
+# 此处将login_required应用到蓝本内所有请求
 @api.before_request
 @auth.login_required
 def before_request():
-    # print(auth.get_auth())
-    # print('before request.........')
-    pass
+    if g.current_user.is_authenticated:
+        g.current_user.ping()
 
 
 @api.route('/tokens/', methods=['POST'])
@@ -45,3 +43,4 @@ def get_token():
         return unauthorized('Invalid credentials')
     return jsonify({'token': g.current_user.generate_auth_token(
         expiration=3600), 'expiration': 3600})
+        

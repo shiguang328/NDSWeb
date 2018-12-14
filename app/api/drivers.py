@@ -1,21 +1,23 @@
 from flask import jsonify, request, g, url_for, current_app, abort
 from .. import db
 from . import api
+from .authentication import auth
 from ..models import Driver
 from flask_mongoengine import ValidationError
 
 
 @api.route('/drivers/')
+# @auth.login_required
 def get_drivers():
     page = request.args.get('page', 1, type=int)
     pagination = Driver.objects.paginate(page=page, per_page=10)
     drivers = pagination.items
     prev = None
     if pagination.has_prev:
-        prev = url_for('api.get_drivers', page=page-1)
+        prev = url_for('api.get_drivers', page=page - 1)
     next = None
     if pagination.has_next:
-        next = url_for('api.get_drivers', page=page+1)
+        next = url_for('api.get_drivers', page=page + 1)
     return jsonify({
         'drivers': [driver.to_json() for driver in drivers],
         'prev': prev,
@@ -25,6 +27,7 @@ def get_drivers():
 
 
 @api.route('/drivers/<id>')
+# @auth.login_required
 def get_driver(id):
     try:
         driver = Driver.objects(id=id).first()
@@ -38,6 +41,7 @@ def get_driver(id):
 
 
 @api.route('/drivers/', methods=['POST'])
+# @auth.login_required
 def new_driver():
     driver = Driver.from_json(request.json)
     driver.save()
@@ -46,6 +50,7 @@ def new_driver():
 
 
 @api.route('/drivers/<id>', methods=['PUT'])
+# @auth.login_required
 def edit_driver(id):
     driver = Driver.objects(id=id).first()
     if driver is None:

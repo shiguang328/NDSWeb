@@ -1,21 +1,24 @@
 from flask import jsonify, request, g, url_for, current_app, abort
 from .. import db
 from . import api
+from .authentication import auth
 from ..models import Car
+from .errors import bad_request
 from flask_mongoengine import ValidationError
 
 
 @api.route('/cars/')
+# @auth.login_required
 def get_cars():
     page = request.args.get('page', 1, type=int)
     pagination = Car.objects.paginate(page=page, per_page=10)
     cars = pagination.items
     prev = None
     if pagination.has_prev:
-        prev = url_for('api.get_cars', page=page-1)
+        prev = url_for('api.get_cars', page=page - 1)
     next = None
     if pagination.has_next:
-        next = url_for('api.get_cars', page=page+1)
+        next = url_for('api.get_cars', page=page + 1)
     return jsonify({
         'cars': [car.to_json() for car in cars],
         'prev': prev,
@@ -25,6 +28,7 @@ def get_cars():
 
 
 @api.route('/cars/<id>')
+# @auth.login_required
 def get_car(id):
     try:
         car = Car.objects(id=id).first()
@@ -38,7 +42,14 @@ def get_car(id):
 
 
 @api.route('/cars/', methods=['POST'])
+# @auth.login_required
 def new_car():
+    licensePlate = request.json.get('LicensePlate')
+    if not licensePlate:
+        return bad_request('License plate not provided.')
+    if Car.objects(LicensePlate=licensePlate).first():
+        return bad_request('License plate already registered.')
+        
     car = Car.from_json(request.json)
     car.save()
     return jsonify(car.to_json()), 201, \
@@ -46,6 +57,7 @@ def new_car():
 
 
 @api.route('/cars/<id>', methods=['PUT'])
+# @auth.login_required
 def edit_car(id):
     car = Car.objects(id=id).first()
     if car is None:
