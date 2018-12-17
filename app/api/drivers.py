@@ -26,6 +26,14 @@ def get_drivers():
     })
 
 
+@api.route('/drivers/dropdown/')
+def get_drivers_dropdown():
+    drivers = Driver.objects()
+    return jsonify({
+        'drivers': [driver.to_simple_json() for driver in drivers]
+    })
+
+
 @api.route('/drivers/<id>')
 # @auth.login_required
 def get_driver(id):

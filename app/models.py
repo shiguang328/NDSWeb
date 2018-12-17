@@ -255,7 +255,7 @@ class Car(db.Document):
             'Brand': self.Brand,
             'OwnerCompany': self.OwnerCompany,
             'Project': self.Project,
-            'BuyTime': self.BuyTime,
+            'BuyTime': datetime_to_timestamp(self.BuyTime),
             'InsuranceNumber': self.InsuranceNumber,
             'ModelName': self.ModelName,
             'VehicleType': self.VehicleType,
@@ -266,13 +266,25 @@ class Car(db.Document):
         }
         return json_car
 
+    def to_simple_json(self):
+        json_car = {
+            'LicensePlate': self.LicensePlate,
+            'id': str(self.id)
+        }
+        return json_car
+
     @staticmethod
     def from_json(json_car):
+        buytime = json_car.get('BuyTime')
+        if buytime and buytime.isnumeric():
+            buytime = datetime.fromtimestamp(int(buytime))
+        else:
+            buytime = None
         LicensePlate = json_car.get('LicensePlate')
         Brand = json_car.get('Brand')
         OwnerCompany = json_car.get('OwnerCompany')
         Project = json_car.get('Project')
-        BuyTime = json_car.get('BuyTime')
+        BuyTime = buytime
         InsuranceNumber = json_car.get('InsuranceNumber')
         ModelName = json_car.get('ModelName')
         VehicleType = json_car.get('VehicleType')
@@ -337,10 +349,8 @@ class Driver(db.Document):
 
     def to_json(self):
         json_driver = {
-            'url': url_for('api.get_driver', id=self.id),
-            # 'FirstName': self.FirstName,
-            # 'LastName': self.LastName,
             'Name': self.Name,
+            'url': url_for('api.get_driver', id=self.id),
             'Address': self.Address,
             'City': self.City,
             'State': self.State,
@@ -351,6 +361,13 @@ class Driver(db.Document):
             'DrivingYears': self.DrivingYears,
             'Profession': self.Profession,
             'MileageTotal': self.MileageTotal
+        }
+        return json_driver
+
+    def to_simple_json(self):
+        json_driver = {
+            'Name': self.Name,
+            'id': str(self.id)
         }
         return json_driver
 
@@ -440,8 +457,8 @@ class Trip(db.Document):
     def to_json(self):
         json_trip = {
             'url': url_for('api.get_trip', id=self.id),
-            'start_time': self.start_time,
-            'end_time': self.end_time,
+            'start_time': datetime_to_timestamp(self.start_time),
+            'end_time': datetime_to_timestamp(self.end_time),
             'disk_number': self.disk_number
         }
         if self.car:
@@ -469,7 +486,8 @@ class Trip(db.Document):
         recorder = None
         if current_user.is_authenticated:
             recorder = current_user
-        trip = Trip(start_time=json_trip.get('start_time'),
+        start_time = datetime.fromtimestamp(int(json_trip.get('start_time')))
+        trip = Trip(start_time=start_time,
                     car=car,
                     driver=driver,
                     recorder=recorder)
@@ -496,3 +514,11 @@ class Trip(db.Document):
                         start_time=start,
                         end_time=start+timedelta(days=3))
             trip.save()
+
+
+def datetime_to_timestamp(time):
+    if not time:
+        return None
+    if not isinstance(time, datetime):
+        raise TypeError('Only accept datetime value.')
+    return int(time.timestamp())

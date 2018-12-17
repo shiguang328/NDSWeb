@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import jsonify, request, g, url_for, current_app, abort
 from .. import db
 from . import api
@@ -24,6 +25,14 @@ def get_cars():
         'prev': prev,
         'next': next,
         'count': pagination.total
+    })
+
+
+@api.route('/cars/dropdown/')
+def get_cars_dropdown():
+    cars = Car.objects()
+    return jsonify({
+        'cars': [car.to_simple_json() for car in cars]
     })
 
 
@@ -62,11 +71,14 @@ def edit_car(id):
     car = Car.objects(id=id).first()
     if car is None:
         abort(404)
+    buytime = request.json.get('BuyTime')
+    if buytime and buytime.isnumeric():
+        car.BuyTime = datetime.fromtimestamp(int(buytime))
     car.LicensePlate = request.json.get('LicensePlate')
     car.Brand = request.json.get('Brand')
     car.OwnerCompany = request.json.get('OwnerCompany')
     car.Project = request.json.get('Project')
-    car.BuyTime = request.json.get('BuyTime')
+    # car.BuyTime = request.json.get('BuyTime')
     car.InsuranceNumber = request.json.get('InsuranceNumber')
     car.ModelName = request.json.get('ModelName')
     car.VehicleType = request.json.get('VehicleType')
