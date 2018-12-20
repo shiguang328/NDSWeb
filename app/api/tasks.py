@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import jsonify, request, g, url_for, current_app, abort, redirect
 from .. import db
 from . import api
-from .errors import bad_request, resource_not_found
+from .errors import bad_request, resource_not_found, TimestampError
 from .authentication import http_auth
 from ..models import Task, Car, Driver
 from flask_mongoengine import ValidationError
@@ -74,13 +74,12 @@ def edit_task(id):
         task.start_time = datetime.fromtimestamp(int(start_time))
     if end_time and end_time.isnumeric():
         task.end_time = datetime.fromtimestamp(int(end_time))
-    # task.start_time = request.json.get('start_time')
-    # task.end_time = request.json.get('end_time')
     task.disk_number = request.json.get('disk_number')
     task.save()
     return jsonify(task.to_json())
 
 
+# 解码输入参数，构建查询条件
 def decode_search_condition(field, data):
     if data is None or data=="" or data=='""' or data=='NaN' or data=='null':
             return {}
@@ -90,7 +89,7 @@ def decode_search_condition(field, data):
         try:
             data = datetime.utcfromtimestamp(int(data))
         except OSError:
-            raise 
+            raise TimestampError('utc timestamp out of range.')
         # 操作符转化为mongodbengine标准的
         mp = {'min': 'gte', 'max': 'lte'}
         operate = mp[field[:3]]
@@ -99,6 +98,8 @@ def decode_search_condition(field, data):
         return {new_field: data.isoformat()}
     return {}
 
+
+# 以原生拼接方式构建查询条件
 def generate_query(args):
     from bson import ObjectId
     query = {}
@@ -122,7 +123,6 @@ def generate_query(args):
             else:
                 query[field] = {operate: data}
     return query
-            
 
 
 # http://127.0.0.1:5000/api/v1/tasks/search/
@@ -150,10 +150,14 @@ def search_tasks():
                 conditions.update({'is_return': True})
             continue
 
-        condition = decode_search_condition(key, value)
+        try:
+            condition = decode_search_condition(key, value)
+        except TimestampError as err:
+            return bad_request(str(err))
+
         conditions.update(condition)
-    print('---------------------------conditions------------------------------')
-    print(conditions)
+    # print('---------------------------conditions------------------------------')
+    # print(conditions)
     try:
         pagination = Task.objects(**conditions).paginate(page=page, per_page=10)
     except:
@@ -177,8 +181,4 @@ def search_tasks():
         'prev': prev,
         'next': next,
         'count': pagination.total
-    })
-
-    return jsonify({
-        'tasks': [task.to_json() for task in tasks]
     })

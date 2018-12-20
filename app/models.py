@@ -225,7 +225,7 @@ def load_user(user_id):
 
 
 class Car(db.Document):
-    CarId = db.StringField(required=True)
+    CarId = db.StringField(required=True, unique=True)
     LicensePlate = db.StringField(required=True)
     Brand = db.StringField()
     OwnerCompany = db.StringField()
@@ -236,7 +236,6 @@ class Car(db.Document):
     VehicleType = db.StringField()
     PowerType = db.StringField()
     AutonomousLevel = db.StringField()
-    # AutonomousLevel = db.StringField()
     AccidentLog = db.StringField()
     Others = db.StringField()
 
@@ -277,6 +276,15 @@ class Car(db.Document):
             'id': str(self.id)
         }
         return json_car
+
+    @staticmethod
+    def all_projects():
+        projects = set()
+        cars = Car.objects()
+        for car in cars:
+            if car.Project and car.Project != '':
+                projects.add(car.Project)
+        return sorted(list(projects))
 
     @staticmethod
     def from_json(json_car):
@@ -321,19 +329,33 @@ class Car(db.Document):
         seed()
         brands = ['Audi', 'Toyota', 'Nissan', 'Buick', 'BMW', 'Cadillac']
         types = ['SUV', 'Van', 'Trucks', 'Bus', 'Taxi', 'Car']
+        projects = ['华为项目', '宝马项目', 'VTTI项目', '通用项目']
+        cha = ['A', 'B', 'C', 'D', 'E', 'H']
+            
         for i in range(count):
-            c = Car(LicensePlate=forgery_py.lorem_ipsum.word(),
+            plate = None
+            while not plate:
+                num = str(randint(100000, 999999))  # 获取随机数
+                candidate = '沪' + choice(cha) + str(num)
+                if not Car.objects(LicensePlate=candidate).first():  # 检查数据库中是否重复
+                    plate = candidate
+
+            c = Car(LicensePlate=plate,
                     Brand=choice(brands),
+                    Project=choice(projects),
                     VehicleType=choice(types),
                     BuyTime=forgery_py.date.date(True))
             c.save()
 
+    @staticmethod
+    def delete(condition=None):
+        if not condition:
+            return Car.objects().delete()
+
 
 class Driver(db.Document):
-    DriverId = db.StringField(required=True)
-    Name = db.StringField(required=True)
-    # FirstName = db.StringField()
-    # LastName = db.StringField()
+    DriverId = db.StringField(required=True, unique=True)
+    Name = db.StringField(required=True, unique=True)
     Address = db.StringField()
     City = db.StringField()
     State = db.StringField()
@@ -549,4 +571,4 @@ def datetime_to_timestamp(time):
         return None
     if not isinstance(time, datetime):
         raise TypeError('Only accept datetime value.')
-    return calendar.timegm(self.start_time.utctimetuple())
+    return calendar.timegm(time.utctimetuple())

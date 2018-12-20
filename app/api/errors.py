@@ -30,3 +30,10 @@ def resource_not_found(message):
 @api.errorhandler(ValidationError)
 def validation_error(e):
     return bad_request(e.args[0])
+
+
+class TimestampError(Exception):
+    def __init__(self, *args):
+        self.args = args
+    def __str__(self):
+        return self.args

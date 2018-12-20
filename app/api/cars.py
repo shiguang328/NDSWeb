@@ -4,7 +4,7 @@ from .. import db
 from . import api
 from .authentication import http_auth
 from ..models import Car
-from .errors import bad_request
+from .errors import bad_request, resource_not_found, TimestampError
 from flask_mongoengine import ValidationError
 
 
@@ -33,6 +33,13 @@ def get_cars_dropdown():
     cars = Car.objects()
     return jsonify({
         'cars': [car.to_simple_json() for car in cars]
+    })
+
+@api.route('/cars/projects/')
+def get_projects():
+    projects = Car.all_projects()
+    return jsonify({
+        'projects': projects
     })
 
 
@@ -88,3 +95,65 @@ def edit_car(id):
     car.Others = request.json.get('Others')
     car.save()
     return jsonify(car.to_json())
+
+
+# http://127.0.0.1:5000/api/v1/cars/search/?page=2&CarId=&LicensePlate=&Project=&minBuyTime=&maxBuyTime=
+@api.route('/cars/search/')
+def search_cars():
+    args = request.args
+    page = args.get('page', 1, type=int)
+
+    new_args = args.to_dict()
+    if 'page' in new_args:
+        new_args.pop('page')
+    conditions = {}
+    fields = ['CarId', 'LicensePlate', 'Project', 'minBuyTime', 'maxBuyTime']
+    for key, value in new_args.items():
+        # 参数检查
+        if key not in fields:
+            return bad_request('Parameter error.')
+        try:
+            condition = decode_search_condition(key, value)
+        except TimestampError as err:
+            return bad_request(str(err))
+
+        conditions.update(condition)
+
+    try:
+        pagination = Car.objects(**conditions).paginate(page=page, per_page=10)
+    except:
+        return resource_not_found('Resource not found, please check your url or parameter.')
+    cars = pagination.items
+
+    prev = None
+    if pagination.has_prev:
+        prev = url_for('api.search_cars', page=page - 1, **new_args)
+    next = None
+    if pagination.has_next:
+        next = url_for('api.search_cars', page=page + 1, **new_args)
+    return jsonify({
+        'cars': [car.to_json() for car in cars],
+        'prev': prev,
+        'next': next,
+        'count': pagination.total
+    })
+
+
+# 解码输入参数，构建查询条件
+def decode_search_condition(field, data):
+    if data is None or data=="" or data=='""' or data=='NaN' or data=='null':
+            return {}
+    if field in ['CarId', 'LicensePlate', 'Project']:
+        return {field: data}
+    elif field in ['minBuyTime', 'maxBuyTime']:
+        try:
+            data = datetime.utcfromtimestamp(int(data))
+        except OSError:
+            raise TimestampError('utc timestamp out of range.')
+        # 操作符转化为mongodbengine标准的
+        mp = {'min': 'gte', 'max': 'lte'}
+        operate = mp[field[:3]]
+        # 拼接查询字段
+        new_field = field[3:] + '__' + operate
+        return {new_field: data.isoformat()}
+    return {}
