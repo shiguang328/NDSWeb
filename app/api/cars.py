@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import jsonify, request, g, url_for, current_app, abort
 from .. import db
 from . import api
-from .authentication import auth
+from .authentication import http_auth
 from ..models import Car
 from .errors import bad_request
 from flask_mongoengine import ValidationError

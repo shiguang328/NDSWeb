@@ -21,6 +21,12 @@ def forbidden(message):
     return response
 
 
+def resource_not_found(message):
+    response = jsonify({'error': 'notfound', 'message': message})
+    response.status_code = 404
+    return response
+
+
 @api.errorhandler(ValidationError)
 def validation_error(e):
     return bad_request(e.args[0])

@@ -6,17 +6,15 @@ from flask_moment import Moment
 from flask_login import LoginManager
 # from flask_pagedown import PageDown
 from flask_mongoengine import MongoEngine
+from flask_cors import CORS
 from pymongo import MongoClient
 from config import config
 
 bootstrap = Bootstrap()
 mail = Mail()
 moment = Moment()
-# db = SQLAlchemy()
-# pagedown = PageDown()
-# client = MongoClient('mongodb://localhost')
-# db = client.ndsweb
 db = MongoEngine()
+cors = CORS()
 
 login_manager = LoginManager()
 
@@ -35,6 +33,7 @@ def create_app(config_name):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
+    cors.init_app(app)
     bootstrap.init_app(app)
     mail.init_app(app)
     moment.init_app(app)
@@ -45,7 +44,8 @@ def create_app(config_name):
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
-    from .auth import auth as auth_blueprint
+    # from .auth import auth as auth_blueprint
+    from .api import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
     from .api import api as api_blueprint

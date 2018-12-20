@@ -1,6 +1,7 @@
 from datetime import datetime
 from random import randint
 import hashlib
+import calendar
 from bson import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -248,6 +249,10 @@ class Car(db.Document):
                 self.CarId = temp
 
     def to_json(self):
+        # if self.BuyTime:
+        #     buytime = calendar.timegm(self.BuyTime.utctimetuple())
+        # else:
+        #     buytime = None
         json_car = {
             'url': url_for('api.get_car', id=self.id),
             'CarId': self.CarId,
@@ -441,57 +446,70 @@ class Driver(db.Document):
                 driver.save()
 
 
-class Trip(db.Document):
+class Task(db.Document):
     car = db.ReferenceField(Car, required=True)
     driver = db.ReferenceField(Driver, required=True)
     start_time = db.DateTimeField(required=True)
     end_time = db.DateTimeField()
+    is_return = db.BooleanField(default=False)
     disk_number = db.StringField()
     recorder = db.ReferenceField(User)
 
     def __init__(self, **kwargs):
-        super(Trip, self).__init__(**kwargs)
+        super(Task, self).__init__(**kwargs)
         if current_user.is_authenticated:
             self.recorder = current_user
 
     def to_json(self):
-        json_trip = {
-            'url': url_for('api.get_trip', id=self.id),
+        # if self.start_time:
+        #     start_time = calendar.timegm(self.start_time.utctimetuple())
+        # else:
+        #     start_time = None
+        # if self.end_time:
+        #     end_time = calendar.timegm(self.end_time.utctimetuple())
+        # else:
+        #     end_time = None
+        json_task = {
+            'url': url_for('api.get_task', id=self.id),
             'start_time': datetime_to_timestamp(self.start_time),
             'end_time': datetime_to_timestamp(self.end_time),
-            'disk_number': self.disk_number
+            # 'start_time': start_time,
+            # 'end_time': end_time,
+            'disk_number': self.disk_number,
+            'is_return': bool(self.is_return)
         }
         if self.car:
-            json_trip['car'] = {'LicensePlate': self.car.LicensePlate, 'url': url_for('api.get_car', id=self.car.id)}
+            json_task['car'] = {'LicensePlate': self.car.LicensePlate, 'url': url_for('api.get_car', id=self.car.id)}
         if self.driver:
-            json_trip['driver'] = {'Name': self.driver.Name, 'url': url_for('api.get_driver', id=self.driver.id)}
+            json_task['driver'] = {'Name': self.driver.Name, 'url': url_for('api.get_driver', id=self.driver.id)}
         if self.recorder:
-            json_trip['recorder'] = self.recorder.name
-        return json_trip
+            json_task['recorder'] = self.recorder.name
+        return json_task
 
-    def from_json(json_trip):
+    def from_json(json_task):
         ''' 前端发送car和driver的id来匹配Car和Driver对象 '''
-        if not json_trip.get('start_time'):
-            raise ValidationError('trip does not have a start time')
-        if not json_trip.get('car'):
-            raise ValidationError('trip does not have a car')
-        if not json_trip.get('driver'):
-            raise ValidationError('trip does not have a driver')
-        car = Car.objects(id=ObjectId(json_trip.get('car'))).first()
+        if not json_task.get('start_time'):
+            raise ValidationError('task does not have a start time')
+        if not json_task.get('car'):
+            raise ValidationError('task does not have a car')
+        if not json_task.get('driver'):
+            raise ValidationError('task does not have a driver')
+        car = Car.objects(id=ObjectId(json_task.get('car'))).first()
         if not car:
             raise ValidationError('input car not found')
-        driver = Driver.objects(id=ObjectId(json_trip.get('driver'))).first()
+        driver = Driver.objects(id=ObjectId(json_task.get('driver'))).first()
         if not driver:
             raise ValidationError('input driver not found')
         recorder = None
         if current_user.is_authenticated:
             recorder = current_user
-        start_time = datetime.fromtimestamp(int(json_trip.get('start_time')))
-        trip = Trip(start_time=start_time,
+        start_time = datetime.fromtimestamp(int(json_task.get('start_time')))
+        task = Task(start_time=start_time,
                     car=car,
                     driver=driver,
-                    recorder=recorder)
-        return trip
+                    recorder=recorder,
+                    is_return=bool(json_task.get('is_return')))
+        return task
         
     @staticmethod
     def generate_fake(count=100):
@@ -509,11 +527,21 @@ class Trip(db.Document):
             driver = choice(drivers)
             start = forgery_py.date.date(True)
 
-            trip = Trip(car=car,
+            task = Task(car=car,
                         driver=driver,
                         start_time=start,
                         end_time=start+timedelta(days=3))
-            trip.save()
+            task.save()
+
+    @staticmethod
+    def update_is_return():
+        tasks = Task.objects()
+        for task in tasks:
+            if task.end_time:
+                task.is_return = True
+            else:
+                task.is_return = False
+            task.save()
 
 
 def datetime_to_timestamp(time):
@@ -521,4 +549,4 @@ def datetime_to_timestamp(time):
         return None
     if not isinstance(time, datetime):
         raise TypeError('Only accept datetime value.')
-    return int(time.timestamp())
+    return calendar.timegm(self.start_time.utctimetuple())
