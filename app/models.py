@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from random import randint
 import hashlib
 import calendar
@@ -248,10 +248,6 @@ class Car(db.Document):
                 self.CarId = temp
 
     def to_json(self):
-        # if self.BuyTime:
-        #     buytime = calendar.timegm(self.BuyTime.utctimetuple())
-        # else:
-        #     buytime = None
         json_car = {
             'url': url_for('api.get_car', id=self.id),
             'CarId': self.CarId,
@@ -289,7 +285,7 @@ class Car(db.Document):
     @staticmethod
     def from_json(json_car):
         buytime = json_car.get('BuyTime')
-        if buytime and buytime.isnumeric():
+        if buytime:
             buytime = datetime.fromtimestamp(int(buytime))
         else:
             buytime = None
@@ -355,13 +351,13 @@ class Car(db.Document):
 
 class Driver(db.Document):
     DriverId = db.StringField(required=True, unique=True)
-    Name = db.StringField(required=True, unique=True)
+    Name = db.StringField(required=True)
     Address = db.StringField()
     City = db.StringField()
     State = db.StringField()
     Zip = db.StringField()
     Gender = db.StringField()
-    Location = db.StringField()
+    # Location = db.StringField()
     BirthDay = db.DateTimeField()
     DrivingYears = db.IntField()
     Profession = db.StringField()
@@ -376,6 +372,7 @@ class Driver(db.Document):
 
     def to_json(self):
         json_driver = {
+            'DriverId': self.DriverId,
             'Name': self.Name,
             'url': url_for('api.get_driver', id=self.id),
             'Address': self.Address,
@@ -383,8 +380,8 @@ class Driver(db.Document):
             'State': self.State,
             'Zip': self.Zip,
             'Gender': self.Gender,
-            'Location': self.Location,
-            'BirthDay': self.BirthDay,
+            # 'Location': self.Location,
+            'BirthDay': datetime_to_timestamp(self.BirthDay),
             'DrivingYears': self.DrivingYears,
             'Profession': self.Profession,
             'MileageTotal': self.MileageTotal
@@ -400,15 +397,18 @@ class Driver(db.Document):
 
     @staticmethod
     def from_json(json_driver):
-        # FirstName = json_driver.get('FirstName')
-        # LastName = json_driver.get('LastName')
+        birthday = json_driver.get('BirthDay')
+        if birthday:
+            birthday = datetime.fromtimestamp(int(birthday))
+        else:
+            birthday = None
         Name = json_driver.get('Name')
         Address = json_driver.get('Address')
         City = json_driver.get('City')
         State = json_driver.get('State')
         Zip = json_driver.get('Zip')
         Gender = json_driver.get('Gender')
-        Location = json_driver.get('Location')
+        # Location = json_driver.get('Location')
         BirthDay = json_driver.get('BirthDay')
         DrivingYears = json_driver.get('DrivingYears')
         Profession = json_driver.get('Profession')
@@ -421,7 +421,7 @@ class Driver(db.Document):
                       State=State,
                       Zip=Zip,
                       Gender=Gender,
-                      Location=Location,
+                    #   Location=Location,
                       BirthDay=BirthDay,
                       DrivingYears=DrivingYears,
                       Profession=Profession,
@@ -434,15 +434,25 @@ class Driver(db.Document):
 
         seed()
         for i in range(count):
-            d = Driver(DriverId=forgery_py.lorem_ipsum.word(),
-                    Name=forgery_py.lorem_ipsum.word(),
-                    DrivingYears=randint(0, 60),
+            birthday = forgery_py.date.date(True)
+            year = randint(20, 60)
+            birthday = birthday + timedelta(-360*year)
+            d = Driver(Name=forgery_py.name.full_name(),
+                    DrivingYears=randint(0, 40),
                     Address=forgery_py.address.street_address(),
                     Zip=forgery_py.address.zip_code(),
                     City=forgery_py.address.city(),
                     State=forgery_py.address.state(),
-                    BirthDay=forgery_py.date.date(True))
+                    BirthDay=birthday)
             d.save()
+
+    @staticmethod
+    def delete(condition=None):
+        if not condition:
+            drivers = Driver.objects()
+            for i in range(len(drivers)):
+                if int(drivers[i].DriverId) > 100000:
+                    drivers[i].delete()
 
     @staticmethod
     def merge_firstname_lastname_to_name():
@@ -479,8 +489,9 @@ class Task(db.Document):
 
     def __init__(self, **kwargs):
         super(Task, self).__init__(**kwargs)
-        if current_user.is_authenticated:
-            self.recorder = current_user
+        if not self.recorder:
+            if current_user and current_user.is_authenticated:
+                self.recorder = current_user
 
     def to_json(self):
         # if self.start_time:
@@ -538,22 +549,34 @@ class Task(db.Document):
         from random import seed
         import forgery_py
         from random import choice
-        from datetime import timedelta
 
         cars = Car.objects()
         drivers = Driver.objects()
+        users = User.objects()
 
         seed()
         for i in range(count):
             car = choice(cars)
             driver = choice(drivers)
+            recorer = choice(users)
             start = forgery_py.date.date(True)
-
-            task = Task(car=car,
-                        driver=driver,
-                        start_time=start,
-                        end_time=start+timedelta(days=3))
+            if i % 5:
+                task = Task(car=car,
+                            driver=driver,
+                            recorder=recorer,
+                            start_time=start,
+                            end_time=start+timedelta(days=3))
+            else:
+                task = Task(car=car,
+                            driver=driver,
+                            recorder=recorer,
+                            start_time=start)
             task.save()
+
+    @staticmethod
+    def delete(condition=None):
+        if not condition:
+            return Task.objects().delete()
 
     @staticmethod
     def update_is_return():

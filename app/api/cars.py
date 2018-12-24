@@ -79,7 +79,7 @@ def edit_car(id):
     if car is None:
         abort(404)
     buytime = request.json.get('BuyTime')
-    if buytime and buytime.isnumeric():
+    if buytime:
         car.BuyTime = datetime.fromtimestamp(int(buytime))
     car.LicensePlate = request.json.get('LicensePlate')
     car.Brand = request.json.get('Brand')

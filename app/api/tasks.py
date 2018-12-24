@@ -49,6 +49,8 @@ def get_task(id):
 # @auth.login_required
 def new_task():
     task = Task.from_json(request.json)
+    if task.end_time:
+        task.is_return = True
     task.save()
     return jsonify(task.to_json()), 201, \
         {'Location': url_for('api.get_task', id=task.id)}
@@ -70,11 +72,14 @@ def edit_task(id):
         task.driver = Driver.objects(id=request.json.get('driver')).first()
     start_time = request.json.get('start_time')
     end_time = request.json.get('end_time')
-    if start_time and start_time.isnumeric():
+    if start_time:
         task.start_time = datetime.fromtimestamp(int(start_time))
-    if end_time and end_time.isnumeric():
+    if end_time:
         task.end_time = datetime.fromtimestamp(int(end_time))
     task.disk_number = request.json.get('disk_number')
+
+    if task.end_time:
+        task.is_return = True
     task.save()
     return jsonify(task.to_json())
 
@@ -144,9 +149,9 @@ def search_tasks():
             return bad_request('Parameter error.')
         # is_return定义：0:车辆未返回，即'end_time'为空；1：车辆已返回，即'end_time'不为空
         if key == 'is_return':
-            if value == '0':
-                conditions.update({'is_return': None})
-            elif value == '1':
+            if value == 'false':
+                conditions.update({'is_return': False})
+            elif value == 'true':
                 conditions.update({'is_return': True})
             continue
 
@@ -156,8 +161,7 @@ def search_tasks():
             return bad_request(str(err))
 
         conditions.update(condition)
-    # print('---------------------------conditions------------------------------')
-    # print(conditions)
+
     try:
         pagination = Task.objects(**conditions).paginate(page=page, per_page=10)
     except:
