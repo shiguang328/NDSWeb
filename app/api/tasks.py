@@ -186,3 +186,37 @@ def search_tasks():
         'next': next,
         'count': pagination.total
     })
+
+import random
+from .ghost_car import get_current_pos
+cars = []
+drivers = []
+@api.route('/tasks/online/')
+def online_tasks():
+    # random select 5 car
+    if not len(cars):
+        cs = Car.objects()
+        for i in range(5):
+            car = random.choice(cs)
+            cars.append(car)
+        # cars.extend(random.sample(cs, 5))
+    if not len(drivers):
+        drs = Driver.objects()
+        for i in range(5):
+            driver = random.choice(drs)
+            drivers.append(driver)
+        # drivers.extend(random.sample(drs, 5))
+
+    positions = get_current_pos()
+    targets = []
+    for i, pos in enumerate(positions):
+        json_task = {}
+        json_task['car'] = {'LicensePlate': cars[i].LicensePlate, 'url': url_for('api.get_car', id=cars[i].id)}
+        json_task['driver'] = {'Name': drivers[i].Name, 'url': url_for('api.get_driver', id=drivers[i].id)}
+        json_task['position'] = pos
+        targets.append(json_task)
+
+    return jsonify({
+        'tasks': targets,
+        'count': len(targets)
+    })

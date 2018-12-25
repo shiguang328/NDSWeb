@@ -42,3 +42,6 @@ nosetests.xml
 
 # Virtual environment
 venv
+
+# test data
+ghost_data
