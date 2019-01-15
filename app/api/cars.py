@@ -1,15 +1,15 @@
 from datetime import datetime
-from flask import jsonify, request, g, url_for, current_app, abort
+from flask import jsonify, request, g, url_for, current_app, abort, current_app
 from .. import db
 from . import api
 from .authentication import http_auth
-from ..models import Car
+from ..models import Car, Task
 from .errors import bad_request, resource_not_found, TimestampError
 from flask_mongoengine import ValidationError
 
 
 @api.route('/cars/')
-# @auth.login_required
+# @http_auth.login_required
 def get_cars():
     page = request.args.get('page', 1, type=int)
     pagination = Car.objects.paginate(page=page, per_page=10)
@@ -44,7 +44,7 @@ def get_projects():
 
 
 @api.route('/cars/<id>')
-# @auth.login_required
+# @http_auth.login_required
 def get_car(id):
     try:
         car = Car.objects(id=id).first()
@@ -58,29 +58,61 @@ def get_car(id):
 
 
 @api.route('/cars/', methods=['POST'])
-# @auth.login_required
+# @http_auth.login_required
 def new_car():
+    if not hasattr(request, 'json'):
+        return bad_request('No json data recived.')
     licensePlate = request.json.get('LicensePlate')
     if not licensePlate:
         return bad_request('License plate not provided.')
     if Car.objects(LicensePlate=licensePlate).first():
         return bad_request('License plate already registered.')
         
-    car = Car.from_json(request.json)
-    car.save()
+    try:
+        car = Car.from_json(request.json)
+        car.save()
+    except Exception as why:
+        current_app.logger.error(str(why))
+        return bad_request(str(why))
+
     return jsonify(car.to_json()), 201, \
         {'Location': url_for('api.get_car', id=car.id)}
 
 
+@api.route('/cars/<id>', methods=['DELETE'])
+# @http_auth.login_required
+def delete_car(id):
+    ''' 删除司机，并级联删除相关的Task '''
+    try:
+        car = Car.objects(id=id).first()
+    except:
+        abort(404)
+
+    if not car:
+        abort(404)
+    
+    # 删除关联的task
+    Task.objects(car=car).delete()
+
+    msg = 'Car %s have been removed.' % car.LicensePlate
+    car.delete()
+    response = jsonify({'info': msg})
+    response.status_code = 200
+    return response
+
+
 @api.route('/cars/<id>', methods=['PUT'])
-# @auth.login_required
+# @http_auth.login_required
 def edit_car(id):
+    if not hasattr(request, 'json'):
+        return bad_request('No json data recived.')
+        
     car = Car.objects(id=id).first()
     if car is None:
         abort(404)
     buytime = request.json.get('BuyTime')
     if buytime:
-        car.BuyTime = datetime.fromtimestamp(int(buytime))
+        car.BuyTime = datetime.utcfromtimestamp(int(buytime))
     car.LicensePlate = request.json.get('LicensePlate')
     car.Brand = request.json.get('Brand')
     car.OwnerCompany = request.json.get('OwnerCompany')
@@ -93,7 +125,11 @@ def edit_car(id):
     car.AutonomousVehicle = request.json.get('AutonomousVehicle')
     car.AccidentLog = request.json.get('AccidentLog')
     car.Others = request.json.get('Others')
-    car.save()
+    try:
+        car.save()
+    except Exception as why:
+        current_app.logger.error(str(why))
+        return bad_request(str(why))
     return jsonify(car.to_json())
 
 

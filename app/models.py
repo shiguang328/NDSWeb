@@ -127,8 +127,8 @@ class User(UserMixin, db.Document):
             'confirmed': self.confirmed,
             'name': self.name,
             'phone': self.phone,
-            'member_since': self.member_since,
-            'last_seen': self.last_seen
+            'member_since': datetime_to_timestamp(self.member_since),
+            'last_seen': datetime_to_timestamp(self.last_seen)
         }
         return json_user
 
@@ -138,13 +138,14 @@ class User(UserMixin, db.Document):
         username = json_user.get('username')
         admin = json_user.get('admin')
         password = json_user.get('password')
-        # confirmed = json_user.get('confirmed')
+        confirmed = json_user.get('confirmed')
         name = json_user.get('name')
         phone = json_user.get('phone')
 
         user = User(email=email,
                     username=username,
                     password_hash=generate_password_hash(password),
+                    confirmed=confirmed,
                     admin=admin,
                     name=name,
                     phone=phone)
@@ -158,11 +159,11 @@ class User(UserMixin, db.Document):
 
     @staticmethod
     def verify_auth_token(token):
-        print('recive token: ', token)
+        # print('recive token: ', token)
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-            print(data)
+            # print(data)
         except:
             return None
         user = User.objects(id=ObjectId(data['id'])).first()
@@ -286,7 +287,7 @@ class Car(db.Document):
     def from_json(json_car):
         buytime = json_car.get('BuyTime')
         if buytime:
-            buytime = datetime.fromtimestamp(int(buytime))
+            buytime = datetime.utcfromtimestamp(int(buytime))
         else:
             buytime = None
         LicensePlate = json_car.get('LicensePlate')
@@ -344,7 +345,7 @@ class Car(db.Document):
             c.save()
 
     @staticmethod
-    def delete(condition=None):
+    def delete_all_car(condition=None):
         if not condition:
             return Car.objects().delete()
 
@@ -362,6 +363,7 @@ class Driver(db.Document):
     DrivingYears = db.IntField()
     Profession = db.StringField()
     MileageTotal = db.StringField()
+    Questionnaire = db.DictField()
 
     def __init__(self, **kwargs):
         super(Driver, self).__init__(**kwargs)
@@ -384,7 +386,8 @@ class Driver(db.Document):
             'BirthDay': datetime_to_timestamp(self.BirthDay),
             'DrivingYears': self.DrivingYears,
             'Profession': self.Profession,
-            'MileageTotal': self.MileageTotal
+            'MileageTotal': self.MileageTotal,
+            'Questionnaire': self.Questionnaire
         }
         return json_driver
 
@@ -398,10 +401,14 @@ class Driver(db.Document):
     @staticmethod
     def from_json(json_driver):
         birthday = json_driver.get('BirthDay')
+        # print('before tansfer')
+        # print(birthday)
         if birthday:
-            birthday = datetime.fromtimestamp(int(birthday))
+            birthday = datetime.utcfromtimestamp(int(birthday))
         else:
             birthday = None
+        # print('after tansfer')
+        # print(birthday)
         Name = json_driver.get('Name')
         Address = json_driver.get('Address')
         City = json_driver.get('City')
@@ -409,7 +416,7 @@ class Driver(db.Document):
         Zip = json_driver.get('Zip')
         Gender = json_driver.get('Gender')
         # Location = json_driver.get('Location')
-        BirthDay = json_driver.get('BirthDay')
+        BirthDay = birthday
         DrivingYears = json_driver.get('DrivingYears')
         Profession = json_driver.get('Profession')
         MileageTotal = json_driver.get('MileageTotal')
@@ -447,7 +454,7 @@ class Driver(db.Document):
             d.save()
 
     @staticmethod
-    def delete(condition=None):
+    def delete_all_drivers(condition=None):
         if not condition:
             drivers = Driver.objects()
             for i in range(len(drivers)):
@@ -476,6 +483,14 @@ class Driver(db.Document):
                 if hasattr(driver, 'LastName'):
                     delattr(driver, 'LastName')
                 driver.save()
+
+
+# class Questionnaire(db.EmbeddedDocument):
+#     education_level = db.IntField()  # 1:小学 2:初/高中 3:大/中专 4:本科 5：研究生及以上
+#     violation_last_year = db.IntField()  # 近一年违章数
+#     accident_last_year = db.IntField()  # 近一年事故数
+#     driving_frequency = db.IntField()  # 1:几乎不开车 2:一个月一次 3:一周一次 4:一周2到3次 5：每天驾驶
+#     questions = db.ListFie
 
 
 class Task(db.Document):
@@ -536,7 +551,7 @@ class Task(db.Document):
         recorder = None
         if current_user.is_authenticated:
             recorder = current_user
-        start_time = datetime.fromtimestamp(int(json_task.get('start_time')))
+        start_time = datetime.utcfromtimestamp(int(json_task.get('start_time')))
         task = Task(start_time=start_time,
                     car=car,
                     driver=driver,
@@ -574,7 +589,7 @@ class Task(db.Document):
             task.save()
 
     @staticmethod
-    def delete(condition=None):
+    def delete_all_tasks(condition=None):
         if not condition:
             return Task.objects().delete()
 

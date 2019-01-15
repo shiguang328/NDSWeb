@@ -10,7 +10,7 @@ from mongoengine.queryset.visitor import Q
 
 
 @api.route('/tasks/')
-# @auth.login_required
+# @http_auth.login_required
 def get_tasks():
     page = request.args.get('page', 1, type=int)
     end_time = request.args.get('end_time', None, type=datetime)
@@ -32,7 +32,7 @@ def get_tasks():
 
 
 @api.route('/tasks/<id>')
-# @auth.login_required
+# @http_auth.login_required
 def get_task(id):
     try:
         task = Task.objects(id=id).first()
@@ -46,19 +46,47 @@ def get_task(id):
 
 
 @api.route('/tasks/', methods=['POST'])
-# @auth.login_required
+# @http_auth.login_required
 def new_task():
-    task = Task.from_json(request.json)
-    if task.end_time:
-        task.is_return = True
-    task.save()
+    if not hasattr(request, 'json'):
+        return bad_request('No json data recived.')
+    try:
+        task = Task.from_json(request.json)
+        if task.end_time:
+            task.is_return = True
+        task.save()
+    except Exception as why:
+        current_app.logger.error(str(why))
+        return bad_request(str(why))
     return jsonify(task.to_json()), 201, \
         {'Location': url_for('api.get_task', id=task.id)}
 
 
+@api.route('/tasks/<id>', methods=['DELETE'])
+# @http_auth.login_required
+def delete_task(id):
+    try:
+        task = Task.objects(id=id).first()
+    except:
+        abort(404)
+
+    if not task:
+        abort(404)
+
+    msg = 'Task have been removed.'
+    # print(msg)
+    task.delete()
+    response = jsonify({'info': msg})
+    response.status_code = 200
+    return response
+
+
 @api.route('/tasks/<id>', methods=['PUT'])
-# @auth.login_required
+# @http_auth.login_required
 def edit_task(id):
+    if not hasattr(request, 'json'):
+        return bad_request('No json data recived.')
+        
     try:
         task = Task.objects(id=id).first()
     except:
@@ -73,14 +101,18 @@ def edit_task(id):
     start_time = request.json.get('start_time')
     end_time = request.json.get('end_time')
     if start_time:
-        task.start_time = datetime.fromtimestamp(int(start_time))
+        task.start_time = datetime.utcfromtimestamp(int(start_time))
     if end_time:
-        task.end_time = datetime.fromtimestamp(int(end_time))
+        task.end_time = datetime.utcfromtimestamp(int(end_time))
     task.disk_number = request.json.get('disk_number')
 
     if task.end_time:
         task.is_return = True
-    task.save()
+    try:
+        task.save()
+    except Exception as why:
+        current_app.logger.error(str(why))
+        return bad_request(str(why))
     return jsonify(task.to_json())
 
 

@@ -1,0 +1,73 @@
+[2019-01-15 14:30:44,349] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - ImmutableMultiDict([('page', '8')])
+[2019-01-15 14:30:44,350] {D:\workspace\NDSWeb\app\api\authentication.py:41} INFO - None
+[2019-01-15 14:37:11,338] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - Headers: Cache-Control: no-cache
+Postman-Token: 80dea40c-856d-4a6f-930a-7a95b447f420
+User-Agent: PostmanRuntime/7.6.0
+Accept: */*
+Host: 127.0.0.1:5000
+Cookie: session=.eJwljjEOwzAMA__iOYNjWbaczxQWJaFdk2Yq-vca6MzjkZ_0iNOvZzre5-1berwsHckrgqWpVB6lTx2tcmmdsHfNZHl6t0riKuhQDqMSu8IcKIMWB7GYNCskLwfrcnWsPLzXvYoRl-J5J4ELaDVaBLRFjoI6OG3pvvz8n2G1tYgJz2Mqj5whyiTp-wN8bTbF.XBi9dg.uSPtOXyQi7wt65kZji59t8dcQN0
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+
+[2019-01-15 14:37:11,346] {D:\workspace\NDSWeb\app\api\authentication.py:37} INFO - Body: b''
+[2019-01-15 14:40:01,483] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - Headers: Cache-Control: no-cache
+Postman-Token: 83c8d860-4f3c-473e-8810-0d1cb7b0e512
+User-Agent: PostmanRuntime/7.6.0
+Accept: */*
+Host: 127.0.0.1:5000
+Cookie: session=.eJwljjEOwzAMA__iOYNjWbaczxQWJaFdk2Yq-vca6MzjkZ_0iNOvZzre5-1berwsHckrgqWpVB6lTx2tcmmdsHfNZHl6t0riKuhQDqMSu8IcKIMWB7GYNCskLwfrcnWsPLzXvYoRl-J5J4ELaDVaBLRFjoI6OG3pvvz8n2G1tYgJz2Mqj5whyiTp-wN8bTbF.XBi9dg.uSPtOXyQi7wt65kZji59t8dcQN0
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+
+[2019-01-15 14:40:01,488] {D:\workspace\NDSWeb\app\api\authentication.py:37} INFO - Args: ImmutableMultiDict([('page', '1'), ('CarId', ''), ('LicensePlate', ''), ('Project', ''), ('minBuyTime', '1544313600'), ('maxBuyTime', '')])
+[2019-01-15 14:40:01,489] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - Body: b''
+[2019-01-15 14:44:12,013] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - ------------------------------------------------------------------------------------
+[2019-01-15 14:44:12,127] {D:\workspace\NDSWeb\app\api\authentication.py:39} INFO - Args: ImmutableMultiDict([('page', '1'), ('CarId', ''), ('LicensePlate', ''), ('Project', ''), ('minBuyTime', '1544313600'), ('maxBuyTime', '')])
+[2019-01-15 14:44:12,128] {D:\workspace\NDSWeb\app\api\authentication.py:40} INFO - Body: b''
+[2019-01-15 14:46:13,669] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - ------------------------------------------------------------------------------------
+[2019-01-15 14:46:13,673] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - Address: 127.0.0.1  Methods: GET
+[2019-01-15 14:46:13,673] {D:\workspace\NDSWeb\app\api\authentication.py:39} INFO - Args: ImmutableMultiDict([('page', '1'), ('CarId', ''), ('LicensePlate', ''), ('Project', ''), ('minBuyTime', '1544313600'), ('maxBuyTime', '')])
+[2019-01-15 14:46:13,674] {D:\workspace\NDSWeb\app\api\authentication.py:40} INFO - Body: b''
+[2019-01-15 14:46:51,871] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - ------------------------------------------------------------------------------------
+[2019-01-15 14:46:51,871] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - Address: 127.0.0.1  Methods: POST
+[2019-01-15 14:46:51,872] {D:\workspace\NDSWeb\app\api\authentication.py:39} INFO - Args: ImmutableMultiDict([])
+[2019-01-15 14:46:51,872] {D:\workspace\NDSWeb\app\api\authentication.py:40} INFO - Body: b'{\n    "AutonomousLevel": "L2",\n    "Brand": "\xe5\x8d\xa1\xe8\xbf\xaa\xe6\x8b\x89\xe5\x85\x8b",\n    "BuyTime": "1544054400",\n    "LicensePlate": "\xe6\xb2\xaaA888888",\n    "OwnerCompany": "\xe5\xa6\x82\xe5\xae\x89",\n    "PowerType": "Oil",\n    "Project": "\xe5\x8d\x8e\xe4\xb8\xba\xe9\xa1\xb9\xe7\x9b\xae",\n    "VehicleType": "SUV"\n}'
+[2019-01-15 14:48:05,909] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - ------------------------------------------------------------------------------------
+[2019-01-15 14:48:05,918] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - Address: 127.0.0.1  Methods: DELETE
+[2019-01-15 14:48:05,919] {D:\workspace\NDSWeb\app\api\authentication.py:39} INFO - Args: ImmutableMultiDict([])
+[2019-01-15 14:48:05,920] {D:\workspace\NDSWeb\app\api\authentication.py:40} INFO - Body: b''
+[2019-01-15 14:48:05,920] {D:\workspace\NDSWeb\app\api\authentication.py:46} INFO - None
+[2019-01-15 14:48:53,854] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - ------------------------------------------------------------------------------------
+[2019-01-15 14:48:53,854] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - Address: 127.0.0.1  Methods: POST
+[2019-01-15 14:48:53,855] {D:\workspace\NDSWeb\app\api\authentication.py:39} INFO - Args: ImmutableMultiDict([])
+[2019-01-15 14:48:53,856] {D:\workspace\NDSWeb\app\api\authentication.py:40} INFO - Body: b'{\n    "AutonomousLevel": "L2",\n    "Brand": "\xe5\x8d\xa1\xe8\xbf\xaa\xe6\x8b\x89\xe5\x85\x8b",\n    "BuyTime": "1544054400",\n    "LicensePlate": "\xe6\xb2\xaaA888888",\n    "OwnerCompany": "\xe5\xa6\x82\xe5\xae\x89",\n    "PowerType": "Oil",\n    "Project": "\xe5\x8d\x8e\xe4\xb8\xba\xe9\xa1\xb9\xe7\x9b\xae",\n    "VehicleType": "SUV"\n}'
+[2019-01-15 14:48:53,856] {D:\workspace\NDSWeb\app\api\authentication.py:46} INFO - {'AutonomousLevel': 'L2', 'Brand': '卡迪拉克', 'BuyTime': '1544054400', 'LicensePlate': '沪A888888', 'OwnerCompany': '如安', 'PowerType': 'Oil', 'Project': '华为项目', 'VehicleType': 'SUV'}
+[2019-01-15 14:49:03,582] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - ------------------------------------------------------------------------------------
+[2019-01-15 14:49:03,584] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - Address: 127.0.0.1  Methods: DELETE
+[2019-01-15 14:49:03,584] {D:\workspace\NDSWeb\app\api\authentication.py:39} INFO - Args: ImmutableMultiDict([])
+[2019-01-15 14:49:03,585] {D:\workspace\NDSWeb\app\api\authentication.py:40} INFO - Body: b''
+[2019-01-15 14:49:03,586] {D:\workspace\NDSWeb\app\api\authentication.py:46} INFO - None
+[2019-01-15 17:49:31,544] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - ------------------------------------------------------------------------------------
+[2019-01-15 17:49:31,546] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - Address: 127.0.0.1  Methods: POST
+[2019-01-15 17:49:31,546] {D:\workspace\NDSWeb\app\api\authentication.py:39} INFO - Args: ImmutableMultiDict([])
+[2019-01-15 17:49:31,546] {D:\workspace\NDSWeb\app\api\authentication.py:40} INFO - Body: b'{\n    "AutonomousLevel": "L2",\n    "Brand": "\xe5\x8d\xa1\xe8\xbf\xaa\xe6\x8b\x89\xe5\x85\x8b",\n    "BuyTime": "1991-07-13",\n    "LicensePlate": "\xe6\xb2\xaaA888888",\n    "OwnerCompany": "\xe5\xa6\x82\xe5\xae\x89",\n    "PowerType": "Oil",\n    "Project": "\xe5\x8d\x8e\xe4\xb8\xba\xe9\xa1\xb9\xe7\x9b\xae",\n    "VehicleType": "SUV"\n}'
+[2019-01-15 17:49:31,547] {D:\workspace\NDSWeb\app\api\authentication.py:42} INFO - Json data: {'AutonomousLevel': 'L2', 'Brand': '卡迪拉克', 'BuyTime': '1991-07-13', 'LicensePlate': '沪A888888', 'OwnerCompany': '如安', 'PowerType': 'Oil', 'Project': '华为项目', 'VehicleType': 'SUV'}
+[2019-01-15 17:52:03,433] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - ------------------------------------------------------------------------------------
+[2019-01-15 17:52:03,433] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - Address: 127.0.0.1  Methods: POST
+[2019-01-15 17:52:03,434] {D:\workspace\NDSWeb\app\api\authentication.py:39} INFO - Args: ImmutableMultiDict([])
+[2019-01-15 17:52:03,434] {D:\workspace\NDSWeb\app\api\authentication.py:40} INFO - Body: b'{\n    "AutonomousLevel": "L2",\n    "Brand": "\xe5\x8d\xa1\xe8\xbf\xaa\xe6\x8b\x89\xe5\x85\x8b",\n    "BuyTime": "1991-07-13",\n    "LicensePlate": "\xe6\xb2\xaaA888888",\n    "OwnerCompany": "\xe5\xa6\x82\xe5\xae\x89",\n    "PowerType": "Oil",\n    "Project": "\xe5\x8d\x8e\xe4\xb8\xba\xe9\xa1\xb9\xe7\x9b\xae",\n    "VehicleType": "SUV"\n}'
+[2019-01-15 17:52:03,435] {D:\workspace\NDSWeb\app\api\authentication.py:42} INFO - Json data: {'AutonomousLevel': 'L2', 'Brand': '卡迪拉克', 'BuyTime': '1991-07-13', 'LicensePlate': '沪A888888', 'OwnerCompany': '如安', 'PowerType': 'Oil', 'Project': '华为项目', 'VehicleType': 'SUV'}
+[2019-01-15 17:54:12,083] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - ------------------------------------------------------------------------------------
+[2019-01-15 17:54:12,083] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - Address: 127.0.0.1  Methods: POST
+[2019-01-15 17:54:12,084] {D:\workspace\NDSWeb\app\api\authentication.py:39} INFO - Args: ImmutableMultiDict([])
+[2019-01-15 17:54:12,084] {D:\workspace\NDSWeb\app\api\authentication.py:40} INFO - Body: b'{\n    "AutonomousLevel": "L2",\n    "Brand": "\xe5\x8d\xa1\xe8\xbf\xaa\xe6\x8b\x89\xe5\x85\x8b",\n    "BuyTime": "1991-07-13",\n    "LicensePlate": "\xe6\xb2\xaaA888888",\n    "OwnerCompany": "\xe5\xa6\x82\xe5\xae\x89",\n    "PowerType": "Oil",\n    "Project": "\xe5\x8d\x8e\xe4\xb8\xba\xe9\xa1\xb9\xe7\x9b\xae",\n    "VehicleType": "SUV"\n}'
+[2019-01-15 17:54:12,084] {D:\workspace\NDSWeb\app\api\authentication.py:42} INFO - Json data: {'AutonomousLevel': 'L2', 'Brand': '卡迪拉克', 'BuyTime': '1991-07-13', 'LicensePlate': '沪A888888', 'OwnerCompany': '如安', 'PowerType': 'Oil', 'Project': '华为项目', 'VehicleType': 'SUV'}
+[2019-01-15 17:54:12,116] {D:\workspace\NDSWeb\app\api\cars.py:73} ERROR - invalid literal for int() with base 10: '1991-07-13'
+[2019-01-15 18:00:21,672] {D:\workspace\NDSWeb\app\api\authentication.py:36} INFO - ------------------------------------------------------------------------------------
+[2019-01-15 18:00:21,673] {D:\workspace\NDSWeb\app\api\authentication.py:38} INFO - Address: 127.0.0.1  Methods: POST
+[2019-01-15 18:00:21,674] {D:\workspace\NDSWeb\app\api\authentication.py:39} INFO - Args: ImmutableMultiDict([])
+[2019-01-15 18:00:21,674] {D:\workspace\NDSWeb\app\api\authentication.py:40} INFO - Body: b'{\n    "Address": "\xe8\xb5\xa4\xe5\xb3\xb0\xe8\xb7\xaf59\xe5\xbc\x84",\n    "BirthDay": "890467200dsf",\n    "City": "ShangHai",\n    "DrivingYears": 3,\n    "Gender": "Female",\n    "Name": "\xe7\x94\x98\xe7\x94\x98",\n    "Profession": "teacher",\n    "Zip": "2000000"\n}'
+[2019-01-15 18:00:21,675] {D:\workspace\NDSWeb\app\api\authentication.py:42} INFO - Json data: {'Address': '赤峰路59弄', 'BirthDay': '890467200dsf', 'City': 'ShangHai', 'DrivingYears': 3, 'Gender': 'Female', 'Name': '甘甘', 'Profession': 'teacher', 'Zip': '2000000'}
+[2019-01-15 18:00:21,676] {D:\workspace\NDSWeb\app\api\drivers.py:62} ERROR - invalid literal for int() with base 10: '890467200dsf'

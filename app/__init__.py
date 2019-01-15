@@ -51,4 +51,17 @@ def create_app(config_name):
     from .api import api as api_blueprint
     app.register_blueprint(api_blueprint, url_prefix='/api/v1')
 
+    import logging
+    from logging.handlers import RotatingFileHandler
+
+    # handler = RotatingFileHandler('nds.log', maxBytes=10000, backupCount=1)
+    formatter = logging.Formatter(
+        "[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
+    handler = RotatingFileHandler('nds.log', maxBytes=10000000, backupCount=5)
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(formatter)
+    app.logger.addHandler(handler)
+
     return app
+
+
